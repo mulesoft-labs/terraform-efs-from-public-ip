@@ -41,6 +41,50 @@ resource "aws_efs_mount_target" "main" {
   security_groups = ["${data.aws_instance.master_node.vpc_security_group_ids}"]
 }
 
+locals {
+  cluster_security_group = "${sort(data.aws_instance.master_node.vpc_security_group_ids)}"
+}
+
+resource "aws_security_group_rule" "allow_nfs_2049_tcp" {
+  type            = "ingress"
+  from_port       = 2049
+  to_port         = 2049
+  protocol        = "tcp"
+  self = true
+  security_group_id = "${local.cluster_security_group[0]}"
+}
+
+resource "aws_security_group_rule" "allow_nfs_2049_udp" {
+  type            = "ingress"
+  from_port       = 2049
+  to_port         = 2049
+  protocol        = "udp"
+  self = true
+  security_group_id = "${local.cluster_security_group[0]}"
+}
+
+resource "aws_security_group_rule" "allow_nfs_111_tcp" {
+  type            = "ingress"
+  from_port       = 111
+  to_port         = 111
+  protocol        = "tcp"
+  self = true
+  security_group_id = "${local.cluster_security_group[0]}"
+}
+
+resource "aws_security_group_rule" "allow_nfs_111_udp" {
+  type            = "ingress"
+  from_port       = 111
+  to_port         = 111
+  protocol        = "udp"
+  self = true
+  security_group_id = "${local.cluster_security_group[0]}"
+}
+
+output "nfs_security_groups" {
+  value = "${local.cluster_security_group[0]}"
+}
+
 output "security_groups" {
   value = ["${data.aws_instance.master_node.vpc_security_group_ids}"]
 }

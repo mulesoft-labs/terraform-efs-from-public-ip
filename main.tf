@@ -1,12 +1,12 @@
 provider "aws" {}
 
-variable "master_node_public_ip" {}
+variable "node_public_ip" {}
 variable "name" {}
 
 data "aws_instance" "master_node" {
   filter {
     name   = "ip-address"
-    values = ["${var.master_node_public_ip}"]
+    values = ["${var.node_public_ip}"]
   }
 }
 
@@ -30,7 +30,7 @@ data "aws_subnet_ids" "all" {
 resource "aws_efs_file_system" "main" {
   tags {
     Name = "${var.name}"
-    PublicIP = "${var.master_node_public_ip}"
+    PublicIP = "${var.node_public_ip}"
   }
 }
 

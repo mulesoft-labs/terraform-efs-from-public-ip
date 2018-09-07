@@ -38,11 +38,12 @@ resource "aws_efs_mount_target" "main" {
   count           = "${length(data.aws_subnet_ids.all.ids)}"
   file_system_id  = "${aws_efs_file_system.main.id}"
   subnet_id       = "${element(data.aws_subnet_ids.all.ids, count.index)}"
-  security_groups = ["${data.aws_instance.master_node.vpc_security_group_ids}"]
+  security_groups = ["${aws_security_group.efs.id}"]
 }
 
-locals {
-  cluster_security_group = "${sort(data.aws_instance.master_node.vpc_security_group_ids)}"
+resource "aws_security_group" "efs" {
+  name   = "${var.name}-efs-sg"
+  vpc_id = "${data.aws_subnet.master_node_subnet.vpc_id}"
 }
 
 resource "aws_security_group_rule" "allow_nfs_2049_tcp" {
@@ -50,8 +51,8 @@ resource "aws_security_group_rule" "allow_nfs_2049_tcp" {
   from_port       = 2049
   to_port         = 2049
   protocol        = "tcp"
-  self = true
-  security_group_id = "${local.cluster_security_group[0]}"
+  cidr_blocks     = ["0.0.0.0/0"]
+  security_group_id = "${aws_security_group.efs.id}"
 }
 
 resource "aws_security_group_rule" "allow_nfs_2049_udp" {
@@ -59,8 +60,8 @@ resource "aws_security_group_rule" "allow_nfs_2049_udp" {
   from_port       = 2049
   to_port         = 2049
   protocol        = "udp"
-  self = true
-  security_group_id = "${local.cluster_security_group[0]}"
+  cidr_blocks     = ["0.0.0.0/0"]
+  security_group_id = "${aws_security_group.efs.id}"
 }
 
 resource "aws_security_group_rule" "allow_nfs_111_tcp" {
@@ -68,8 +69,8 @@ resource "aws_security_group_rule" "allow_nfs_111_tcp" {
   from_port       = 111
   to_port         = 111
   protocol        = "tcp"
-  self = true
-  security_group_id = "${local.cluster_security_group[0]}"
+  cidr_blocks     = ["0.0.0.0/0"]
+  security_group_id = "${aws_security_group.efs.id}"
 }
 
 resource "aws_security_group_rule" "allow_nfs_111_udp" {
@@ -77,12 +78,12 @@ resource "aws_security_group_rule" "allow_nfs_111_udp" {
   from_port       = 111
   to_port         = 111
   protocol        = "udp"
-  self = true
-  security_group_id = "${local.cluster_security_group[0]}"
+  cidr_blocks     = ["0.0.0.0/0"]
+  security_group_id = "${aws_security_group.efs.id}"
 }
 
-output "nfs_security_groups" {
-  value = "${local.cluster_security_group[0]}"
+output "efs_security_group_id" {
+  value = "${aws_security_group.efs.id}"
 }
 
 output "security_groups" {

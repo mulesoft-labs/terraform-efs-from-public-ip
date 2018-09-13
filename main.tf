@@ -3,6 +3,8 @@ provider "aws" {}
 variable "node_public_ip" {}
 variable "name" {}
 
+data "aws_availability_zones" "available" {}
+
 data "aws_instance" "master_node" {
   filter {
     name   = "ip-address"
@@ -11,17 +13,18 @@ data "aws_instance" "master_node" {
 }
 
 output "master_node_ip" {
-  value ="${data.aws_instance.master_node.private_ip}"
+  value = "${data.aws_instance.master_node.private_ip}"
 }
 
 data "aws_subnet" "master_node_subnet" {
   id = "${data.aws_instance.master_node.subnet_id}"
 }
 
-data "aws_subnet_ids" "all" {
+data "aws_subnet_ids" "cluster" {
   vpc_id = "${data.aws_subnet.master_node_subnet.vpc_id}"
+
   tags {
-    Name = "*private*"
+    Name = "*${var.name}-private*"
   }
 }
 
@@ -29,15 +32,15 @@ data "aws_subnet_ids" "all" {
 
 resource "aws_efs_file_system" "main" {
   tags {
-    Name = "${var.name}"
+    Name     = "${var.name}"
     PublicIP = "${var.node_public_ip}"
   }
 }
 
 resource "aws_efs_mount_target" "main" {
-  count           = "${length(data.aws_subnet_ids.all.ids)}"
+  count           = "${min(length(data.aws_subnet_ids.cluster.ids), length(data.aws_availability_zones.available.names))}"
   file_system_id  = "${aws_efs_file_system.main.id}"
-  subnet_id       = "${element(data.aws_subnet_ids.all.ids, count.index)}"
+  subnet_id       = "${element(data.aws_subnet_ids.cluster.ids, count.index)}"
   security_groups = ["${aws_security_group.efs.id}"]
 }
 
@@ -47,38 +50,38 @@ resource "aws_security_group" "efs" {
 }
 
 resource "aws_security_group_rule" "allow_nfs_2049_tcp" {
-  type            = "ingress"
-  from_port       = 2049
-  to_port         = 2049
-  protocol        = "tcp"
-  cidr_blocks     = ["0.0.0.0/0"]
+  type              = "ingress"
+  from_port         = 2049
+  to_port           = 2049
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = "${aws_security_group.efs.id}"
 }
 
 resource "aws_security_group_rule" "allow_nfs_2049_udp" {
-  type            = "ingress"
-  from_port       = 2049
-  to_port         = 2049
-  protocol        = "udp"
-  cidr_blocks     = ["0.0.0.0/0"]
+  type              = "ingress"
+  from_port         = 2049
+  to_port           = 2049
+  protocol          = "udp"
+  cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = "${aws_security_group.efs.id}"
 }
 
 resource "aws_security_group_rule" "allow_nfs_111_tcp" {
-  type            = "ingress"
-  from_port       = 111
-  to_port         = 111
-  protocol        = "tcp"
-  cidr_blocks     = ["0.0.0.0/0"]
+  type              = "ingress"
+  from_port         = 111
+  to_port           = 111
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = "${aws_security_group.efs.id}"
 }
 
 resource "aws_security_group_rule" "allow_nfs_111_udp" {
-  type            = "ingress"
-  from_port       = 111
-  to_port         = 111
-  protocol        = "udp"
-  cidr_blocks     = ["0.0.0.0/0"]
+  type              = "ingress"
+  from_port         = 111
+  to_port           = 111
+  protocol          = "udp"
+  cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = "${aws_security_group.efs.id}"
 }
 
@@ -91,7 +94,7 @@ output "security_groups" {
 }
 
 output "subnets" {
-  value = ["${data.aws_subnet_ids.all.ids}"]
+  value = ["${data.aws_subnet_ids.cluster.ids}"]
 }
 
 output "dns_name" {

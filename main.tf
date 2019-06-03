@@ -1,3 +1,10 @@
+terraform {
+  backend "s3" {
+    bucket="${var.state_s3_bucket}",
+    key="${var.name}/efs.tfstate"
+  }
+}
+
 provider "aws" {}
 
 variable "node_public_ip" {}

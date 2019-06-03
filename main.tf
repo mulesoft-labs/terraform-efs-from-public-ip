@@ -1,8 +1,5 @@
 terraform {
-  backend "s3" {
-    bucket="${var.state_s3_bucket}",
-    key="${var.name}/efs.tfstate"
-  }
+  backend "s3" { }
 }
 
 provider "aws" {}

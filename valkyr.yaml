@@ -1,0 +1,6 @@
+product: pce
+component: terraform-efs-from-public-ip
+
+strategy: docker
+deploymentStrategy: never
+version: 1.0

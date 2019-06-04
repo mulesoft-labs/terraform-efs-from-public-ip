@@ -1,11 +1,11 @@
 SHELL := bash -exo pipefail
 
 ifndef S3_STATE_BUCKET
-	$(error S3_STATE_BUCKET is undefined)
+$(error S3_STATE_BUCKET is undefined)
 endif
 
 ifndef TF_VAR_name
-	$(error TF_VAR_name is undefined)
+$(error TF_VAR_name is undefined)
 endif
 
 # TF options

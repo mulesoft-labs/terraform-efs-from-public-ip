@@ -24,7 +24,7 @@ efs-provision:
 	$(MAKE) terraform-init
 	$(MAKE) terraform-apply
 
-.PHONY: efs-provision
+.PHONY: efs-deprovision
 efs-provision:
 	$(MAKE) fix-s3-backend
 	$(MAKE) terraform-init

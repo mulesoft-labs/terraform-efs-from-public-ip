@@ -19,7 +19,5 @@ RUN ( \
 WORKDIR /app
 COPY main.tf Makefile ./
 
-RUN terraform init
-
 # By setting this entry point, we expose make target as command
 ENTRYPOINT ["/usr/bin/make"]

@@ -5,7 +5,7 @@ ENV TERRAFORM_VER 0.11.7
 RUN ( \
     apt-get update && \
     apt-get install --yes --no-install-recommends \
-    make curl jq python && \
+    make unzip curl jq python python-pip groff && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     )
